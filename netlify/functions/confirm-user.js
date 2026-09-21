@@ -1,20 +1,22 @@
+// One-time admin utility: manually confirms a user's email in Supabase Auth,
+// for cases where the confirmation email never arrived (deliverability issues,
+// full inbox, etc). Protected by a simple shared-secret query param so it
+// isn't a fully open endpoint. Safe to delete this file once used.
 const { getAdminClient, jsonResponse } = require('./_shared')
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return jsonResponse(405, { error: 'Method not allowed' })
-  }
-
   const secret = event.queryStringParameters?.secret
   if (secret !== 'mcqfix2026') {
     return jsonResponse(401, { error: 'Unauthorized' })
   }
 
-  let email
-  try {
-    ;({ email } = JSON.parse(event.body || '{}'))
-  } catch {
-    return jsonResponse(400, { error: 'Invalid JSON body' })
+  let email = event.queryStringParameters?.email
+  if (!email && event.httpMethod === 'POST') {
+    try {
+      ;({ email } = JSON.parse(event.body || '{}'))
+    } catch {
+      return jsonResponse(400, { error: 'Invalid JSON body' })
+    }
   }
   if (!email) {
     return jsonResponse(400, { error: 'email is required' })
