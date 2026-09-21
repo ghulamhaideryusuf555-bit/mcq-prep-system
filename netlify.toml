@@ -1,8 +1,11 @@
 [build]
   base = "frontend"
   command = "npm run build"
-  publish = "frontend/dist"
+  publish = "dist"
   functions = "../netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
 
 [functions]
   node_bundler = "esbuild"
